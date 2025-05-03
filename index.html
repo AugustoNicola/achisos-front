@@ -65,6 +65,18 @@
         button:hover {
             background: #45a049;
         }
+        
+        @keyframes colorCycle {
+            0%   { background-color: #4CAF50; }
+            33%  { background-color: #9adb64; }
+            66%  { background-color: #af7c4c; }
+            100% { background-color: #4CAF50; }
+        }
+        
+        button.activo, button.activo:hover {
+            animation: colorCycle 1s infinite;
+            color: white;
+        }
 
         @media (max-width: 600px) {
             h1 {
@@ -209,34 +221,46 @@
             <label for="comentarios">Comentarios</label>
             <textarea id="comentarios" name="comentarios" maxlength="500" rows="3"></textarea>
 
-            <button type="submit">¡Achís!</button>
+            <button id="boton_submit" type="submit" class="">¡Achís!</button>
         </form>
     </div>
 
     <script>
-		// Poner la fecha de hoy automáticamente
-		const dateField = document.getElementById('fecha');
-		const today = new Date();
-		const currentDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-		dateField.value = currentDate;
-		
-		// Poner la opción de hora más cercana automáticamente
-		const horaField = document.getElementById('hora');
-		const now = new Date();
-		const hours = now.getHours();
-		const minutes = now.getMinutes();
-		const roundedMinutes = Math.floor(minutes / 15) * 15;
-		const closestPastQuarter = `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
-		const matchingOption = Array.from(horaField.options).find(option => option.value === closestPastQuarter);
-		if (matchingOption) {
-			horaField.value = closestPastQuarter;
-		}
+        function inicializarForm() {
+            // Poner la fecha de hoy automáticamente
+            const dateField = document.getElementById('fecha');
+            const today = new Date();
+            const currentDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            dateField.value = currentDate;
+            
+            // Poner la cantidad en uno automáticamente
+            const cantidadField = document.getElementById('cantidad');
+            cantidadField.value = 1;
+            
+            // Poner la opción de hora más cercana automáticamente
+            const horaField = document.getElementById('hora');
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const roundedMinutes = Math.floor(minutes / 15) * 15;
+            const closestPastQuarter = `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
+            const matchingOption = Array.from(horaField.options).find(option => option.value === closestPastQuarter);
+            if (matchingOption) {
+                horaField.value = closestPastQuarter;
+            }
+        }
+        
+        inicializarForm();
 		
 		// Invocar a la API para guardar el resultado
         const form = document.getElementById('dataForm');
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
-
+            
+            const botonSubmit = document.getElementById('boton_submit');
+            botonSubmit.classList.add('activo');
+            
+            
             // Crear objeto JSON
             const formData = {
                 fecha: form.fecha.value,
@@ -259,8 +283,10 @@
                 });
 
                 if (response.ok) {
+                    botonSubmit.classList.remove('activo');
                     alert('¡Estornudo caputado exitosamente!');
                     form.reset();
+                    inicializarForm();
                 } else {
                     const error = await response.text();
                     alert('Error: ' + error);
